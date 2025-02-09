@@ -151,7 +151,7 @@ const refToken = (g, ref, asEntity) => {
   }
 }
 
-const templateTokens = (g, qi) => {
+const templateTokens = (g, qi, isPointer = false) => {
   let i = 0;
 
   for (const term of qi.terms) {
@@ -171,6 +171,9 @@ const templateTokens = (g, qi) => {
     }
 
     refToken(g, term.first, false);
+    if (isPointer) {
+      g.operator("*");
+    }
     i ++;
   }
 
@@ -181,7 +184,7 @@ const templateTokens = (g, qi) => {
   return i != 0;
 }
 
-const argsTokens = (g, qi) => {
+const argsTokens = (g, qi, isPointer = false) => {
   let i = 0;
 
   g.operator("(");
@@ -202,6 +205,9 @@ const argsTokens = (g, qi) => {
     }
 
     refToken(g, term.first, false);
+    if (isPointer) {
+      g.operator("*");
+    }
     g.operator("&");
     i ++;
   }
@@ -388,7 +394,7 @@ const render_decl = () => {
   g.identifier("flecs");
   g.operator("::");
   g.identifier("query");
-  if (!templateTokens(g, qi)) {
+  if (!templateTokens(g, qi, true)) { // Pass true to indicate pointer type
     g.operator("<>");
   }
 
@@ -416,7 +422,7 @@ const render_create = () => {
     g.function("query_builder");
   }
 
-  templateTokens(g, qi);
+  templateTokens(g, qi, true); // Pass true to indicate pointer type
 
   g.operator("()");
   if (simpleQuery) {
@@ -446,7 +452,7 @@ const render_iter = () => {
   g.operator(".");
   g.identifier("each");
   g.operator("([]");
-  argsTokens(g, qi);
+  argsTokens(g, qi, true); // Pass true to indicate pointer type
   g.operator(" {");
   g.newLine();
   g.newLine();
@@ -454,5 +460,4 @@ const render_iter = () => {
 
   return h('pre', g.elems);
 }
-
 </script>
